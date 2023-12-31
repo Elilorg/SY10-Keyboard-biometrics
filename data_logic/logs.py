@@ -26,13 +26,6 @@ def set_logger(name : str) :
 # Set the logging level
 logger_corres = set_logger("Correspondance")
 
-corres_file = f'./logs/correspondance_coef{COEF}.log'
-log_file_corres_handler = logging.FileHandler(corres_file)
-
-logger_corres.addHandler(log_file_corres_handler)
-
-
-
 logger_erreurs = logging.getLogger("erreurs")
 
 def log_correspondance(username1, username2, correspondance):
