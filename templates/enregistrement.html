@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="{{ url_for('static', filename='logger.js') }}"></script>
+    <title>SY10 - Identification biométrique au clavier</title>
+</head>
+<body>
+
+    <h1>Enregistrement</h1>
+    <form id="text-form" action="/validate" method="POST">
+        <input type="text" id="name" name="name" placeholder="Nom">
+        <textarea id="text-input" name="text-input" placeholder="Votre texte" rows="30" cols="70" onkeydown="keydown(event)" onkeyup="keyup(event)"></textarea>
+        <button id="valider" onclick="valider()">Valider</button>
+    </form>
+
+</body>
+</html>

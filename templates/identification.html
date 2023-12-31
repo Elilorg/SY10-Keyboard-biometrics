@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style-identify.css') }}">
+    <script src="{{ url_for('static', filename='logger.js') }}"></script>
+    <title>SY10 - Identification biométrique au clavier</title>
+</head>
+<body>
+
+    <div class="container" id="left-side" >
+    <h1>Identification</h1>
+    <h2 id="message">Vous êtes : commencez à taper pour être identifié</h2>
+    <input hidden type="text" value="IDENTIFY" id="name" >
+    <textarea id="text-input" name="text-input" placeholder="Votre texte" rows="30" cols="70" onkeydown="keydown(event)" onkeyup="keyup(event)"></textarea>
+    </div>
+    <div class="container" id="right-side">
+        <h3>Niveaux de correspondance</h3>
+        <ol id="user_list">
+            {% for user in users %}
+            <li id="{{ user }}">{{ user }} : 100%</li>
+            {% endfor %}
+        </ol>
+    </div>
+
+</body>
+</html>
