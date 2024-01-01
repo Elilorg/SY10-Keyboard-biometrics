@@ -28,3 +28,5 @@ Le dossier *input/* contient tous les dossiers relatifs aux données récoltées
 - dans *entire_text*, tout le texte récolté pour chaque utilisateur tel quel.
 - dans *session_file*, tous les appuis de touches ainsi que leur temps, en millisecondes depuis l'ouverture de la page
 - dans *treated_files*, les fichiers 'lettre' des utilisateurs, soit les appuies regroupés par touche (voir rapport)
+
+Ce dépôt ne contient aucune donnée utilisateur dans un souci de respect des données personnelles. Vous pouvez ajouter des utilisateurs sur la page d'enregistrement.
