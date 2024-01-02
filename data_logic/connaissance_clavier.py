@@ -69,6 +69,10 @@ def get_connaissance_clavier(lettres):
     FT_sh, FT_ha = FT_hands(lettres)
     mfsh = IntervalleFlou(*extract_mf(FT_sh, PRCT_NOYAUX_CONAISSANCE_CLAVIER))
     mfha = IntervalleFlou(*extract_mf(FT_ha, PRCT_NOYAUX_CONAISSANCE_CLAVIER))
+    mfha.std_droite = mfha.std_droite/3
+    mfha.std_gauche = mfha.std_gauche/3
+    mfsh.std_droite = mfsh.std_droite/3
+    mfsh.std_gauche = mfsh.std_gauche/3
     mfdiff = mfsh-mfha
     if mfdiff == None:
         return None
