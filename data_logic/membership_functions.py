@@ -51,7 +51,7 @@ class IntervalleFlou:
         if self.occurrences == 0 or other.occurrences == 0:
             return None
         occurences = self.occurrences + other.occurrences
-        gauche_noyau = self.gauche_noyau - other.droite_noyau  # Erreur askip desfois droite_noyaux c none ? On doit avoir des cas ou y'a zero bigramme faudra enlever ca. 
+        gauche_noyau = self.gauche_noyau - other.droite_noyau
         droite_noyau = self.droite_noyau - other.gauche_noyau
         std_gauche = self.std_gauche + other.std_gauche
         std_droite = self.std_droite + other.std_droite
