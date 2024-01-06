@@ -17,7 +17,7 @@ Range=[0 1]
 NumMFs=3
 MF1='Faible':'trapmf',[-0.0166 -0.01658 0.04 0.055]
 MF2='Moyen':'trimf',[0.04 0.055 0.07]
-MF3='Eleve':'trapmf',[0.055 0.07 1.128 1.14]
+MF3='Eleve':'trapmf',[0.055 0.07 1 1.1]
 
 [Input2]
 Name='ratio_erreurs'
@@ -31,7 +31,7 @@ MF3='Beaucoup':'trapmf',[0.03 0.04 1 1.01]
 Name='type_erreur'
 Range=[0 1]
 NumMFs=3
-MF1='Débutant':'trapmf',[-0.00254320987654322 -0.00154320987654322 0.348456790123457 0.498456790123457]
+MF1='Débutant':'trapmf',[-0.1 0 0.35 0.5]
 MF2='Moyen':'trimf',[0.1737 0.5463 0.9637]
 MF3='Entraîné':'trapmf',[0.5 0.801 1.03 1.07]
 
