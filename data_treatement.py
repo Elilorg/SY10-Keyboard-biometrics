@@ -26,19 +26,16 @@ def clear_keys(name):
     """
     data_logger.info("CLEAR KEYS")
     key_file_name = save_key_file()
-    data_logger.info("KEY_FILE : " , key_file_name)
-    if key_file_name is not None :
-        data_logger.info("KEY_FILE is not empty")
-        save_keys_to_user_data(key_file_name)
-    else : 
+    if key_file_name:
         data_logger.info("KEY_FILE is empty")
+        save_keys_to_user_data(key_file_name)
     # Create new keys.json containing '[]'
     with open('keys.json', 'w') as json_file:
         json.dump([], json_file)
 
 def identify_user():
-    name = save_key_file() # Name est toujours IDENTIFYs
-    save_keys_to_user_data(name)
+    save_key_file()
+    save_keys_to_user_data("IDENTIFY")
     users = get_user_list()
     correspondances=[]
     for user in users:
