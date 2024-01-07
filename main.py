@@ -17,6 +17,7 @@ def enregistrement():
     """
     renvoie l'interface d'enregistrement pour un nouvel utilisateur
     """
+    clear_keys(request.cookies.get('session_id'))
     resp = make_response(render_template("enregistrement.html") )
     if not request.cookies.get("session_id"):
         resp.set_cookie("session_id", str(uuid4()))
