@@ -1,5 +1,5 @@
 from data_logic.file_manip import load_json
-from  data_logic.membership_functions import IntervalleFlou
+from  data_logic.membership_functions import MF
 from data_logic.const import USERS_FILE_PATH, BIGRAMMES
 from data_logic.logs import log_correspondance, logger_corres, logger_erreurs
 from numpy import prod
@@ -16,16 +16,16 @@ def evaluate_correspondance(user_name1, user_name2):
     #types de données sur lesquelles effectuer un similarite classique
     classic_types = ["hold_times", "flight_times"]
 
-    user_data = load_json(USERS_FILE_PATH).get(user_name1)
-    data_identify = load_json(USERS_FILE_PATH).get(user_name2)
-    if not user_data or not data_identify:
+    data_user1 = load_json(USERS_FILE_PATH).get(user_name1)
+    data_user2 = load_json(USERS_FILE_PATH).get(user_name2)
+    if not data_user1 or not data_user2:
         raise ValueError("L'utilisateur n'existe pas")
     similarites = []
     for data_type in classic_types:
-        for element in user_data[data_type].keys():
+        for element in data_user1[data_type].keys():
             try:
-                mf_user1 = IntervalleFlou(*user_data[data_type][element])
-                mf_user2 = IntervalleFlou(*data_identify[data_type][element])
+                mf_user1 = MF(*data_user1[data_type][element])
+                mf_user2 = MF(*data_user2[data_type][element])
             except KeyError:
                 print(f"L'élément {element} n'existe pas dans l'utilisateur {user_name1} ou {user_name2}")
                 continue
@@ -39,10 +39,10 @@ def evaluate_correspondance(user_name1, user_name2):
 
     similarites_bigrammes = []
     for bigramme in BIGRAMMES:
-        mf1_1, mf1_2 = user_data["bigrammes_hold_times"][bigramme]
-        mf1_1, mf1_2 = IntervalleFlou(*mf1_1), IntervalleFlou(*mf1_2)
-        mf2_1, mf2_2 = data_identify["bigrammes_hold_times"][bigramme]
-        mf2_1, mf2_2 = IntervalleFlou(*mf2_1), IntervalleFlou(*mf2_2)
+        mf1_1, mf1_2 = data_user1["bigrammes_hold_times"][bigramme]
+        mf1_1, mf1_2 = MF(*mf1_1), MF(*mf1_2)
+        mf2_1, mf2_2 = data_user2["bigrammes_hold_times"][bigramme]
+        mf2_1, mf2_2 = MF(*mf2_1), MF(*mf2_2)
         mfs = [mf1_1, mf1_2, mf2_1, mf2_2]
 
 
@@ -54,24 +54,7 @@ def evaluate_correspondance(user_name1, user_name2):
         sim2 = mf1_2.possibilite(mf2_2)
         #similarites_bigrammes.append(min(sim1, sim2)) # le ET est un min
         similarites_bigrammes.append(sim1 * sim2) # le ET est un min
-    
-    ## RESULTATS DU SIF 
-    bon1 = user_data["indiviual_variables"]["bon"]
-    bon2 = data_identify["indiviual_variables"]["bon"]
-    ## IMPLICATION bon1 implique bon2
-    implication1 = implication_reichenbach(bon2, bon1)
-
-    mauvais1 = user_data["indiviual_variables"]["mauvais"]
-    mauvais2 = data_identify["indiviual_variables"]["mauvais"]
-
-    # IMPLICATION identify mauvais implique user mauvais
-    implication2 = implication_reichenbach(mauvais2, mauvais1)
-
-    logger_corres.info(f"Implications : Identify bon => {user_name1} bon : {implication1} ; (resp mauvais) : {implication2}")
 
     log_correspondance(user_name1, user_name2, prod([prod(similarites) , prod(similarites_bigrammes)])) # De niveau INFO
     logger_corres.debug(f"          {user_name1} {user_name2} HT : {round(prod(similarites), 2)} Big : {round(prod(similarites_bigrammes), 2)}")
-    return prod([prod(similarites) , prod(similarites_bigrammes), prod([implication1, implication2])])
-
-def implication_reichenbach(a, b):
-    return 1 - a + a*b
+    return prod([prod(similarites) , prod(similarites_bigrammes)])

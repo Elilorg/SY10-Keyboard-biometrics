@@ -2,19 +2,14 @@ from data_logic.file_manip import load_json
 from data_logic import creer_fichier_lettre
 from data_logic import user_data_from_lettres
 from data_logic import evaluate_correspondance
-from data_logic.const import CHEMIN_DOSSIER_SESSION, CHEMIN_DOSSIER_LETTRES 
-from data_logic.logs import logger_corres, logger_SIF, logger_corrections
-from data_logic.logs import data_logger 
+from data_logic.const import SESSION_FILE_PATH, TREATED_FILE_PATH
+from data_logic.logs import logger_corres
+from loggers import data_logger 
 import logging
-import time
 
-## Ce fichier contient les appels des fonctions a data_logic. C'est l'interface entre les maths et le site web. 
-
-data_logger.setLevel(logging.DEBUG)
+data_logger.setLevel(logging.ERROR)
 
 logger_corres.setLevel(logging.DEBUG)
-logger_SIF.setLevel(logging.DEBUG)
-logger_corrections.setLevel(logging.ERROR)
 
 import json
 
@@ -24,18 +19,14 @@ def clear_keys(name):
     paramètres:
         name: nom à donner au fichier
     """
-    data_logger.info("CLEAR KEYS")
-    key_file_name = save_key_file()
-    if key_file_name:
-        data_logger.info("KEY_FILE is empty")
-        save_keys_to_user_data(key_file_name)
+    save_key_file()
+    save_keys_to_user_data()
     # Create new keys.json containing '[]'
     with open('keys.json', 'w') as json_file:
         json.dump([], json_file)
 
 def identify_user():
-    save_key_file()
-    save_keys_to_user_data("IDENTIFY")
+    save_keys_to_user_data()
     users = get_user_list()
     correspondances=[]
     for user in users:
@@ -48,7 +39,7 @@ def identify_user():
         i[1] = str(i[1])
     #score = correspondances2[sorted_keys[0]] - correspondances2[sorted_keys[1]]
     # message = sorted_keys[0]+" | "+str(round(score*100, 2))
-    #print(correspondances)
+    print(correspondances)
     return correspondances
 
 
@@ -63,34 +54,25 @@ def save_key_file() :
     copie le dictionnaire de session dans un fichier
     Pour le dictionnaire de IDENTIFY, ca écrasera le fichier keys a chaque fois. 
     """
-    data_logger.info("SAVE KEYS")
     with open('keys.json', 'r') as json_file:
         donnees = json.load(json_file)
     if len(donnees) == 0:
-        return None
+        return
     donnees = donnees[0]
     nom = donnees["name"]
     
-    with open(f"{CHEMIN_DOSSIER_SESSION}/{nom}.json", "w") as json_file:
+    with open(f"{SESSION_FILE_PATH}/{nom}.json", "w") as json_file:
         json.dump([donnees],  json_file)
-    return nom
 
 
-def save_keys_to_user_data(name) :
-    file_name = f"{CHEMIN_DOSSIER_SESSION}/{name}.json"
-    donnees = load_json(file_name)
+def save_keys_to_user_data():
+    donnees = load_json("keys.json")
     if len(donnees) == 0:
-        time.sleep(0.1)
-        if len(donnees) == 0:
-            return
-        else : 
-            donnees = load_json(file_name)
+        return
     donnees = donnees[0]
     nom = donnees.get("name", "DEFAULT")
-    data_logger.info("CREATE FICHIER LETTRE")
     creer_fichier_lettre(donnees, nom)
-    data_logger.info("CREATE FICHIER USER")
-    user_data_from_lettres(nom, load_json(CHEMIN_DOSSIER_LETTRES+nom+".json"))
+    user_data_from_lettres(nom, load_json(TREATED_FILE_PATH+nom+".json"))
 
 
 def get_user_list():

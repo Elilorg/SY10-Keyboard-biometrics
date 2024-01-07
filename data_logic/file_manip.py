@@ -1,5 +1,5 @@
 import json
-from data_logic.const import CHEMIN_DOSSIER_LETTRES
+from data_logic.const import TREATED_FILE_PATH
 
 def load_json(filename : str):
     """
@@ -15,7 +15,7 @@ def load_lettres(filename : str):
     Charge un fichier json lettre :
         filename (str) : le nom du fichier json traité. 
     """
-    return load_json(CHEMIN_DOSSIER_LETTRES + filename)
+    return load_json(TREATED_FILE_PATH + filename)
 
 def load_session_file(filename : str, name="DEFAULT NAME") : 
     liste = load_json(filename)

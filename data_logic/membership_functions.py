@@ -1,10 +1,13 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from data_logic.const import TEMPS_MAXIMAL_AUTORISE, POURCENTAGE_DANS_LE_NOYAUX
+from data_logic.const import MAX_TIME_ALLOWED, PERCENT_IN_KERNEL
 from data_logic.logs import logger_intersection
-from data_logic.const import NB_OCCURENCE_SUFFISANT, STD_PAR_DEFAUT
 
-class IntervalleFlou:
+
+OCCURRENCES_THRESHOLD = 10
+DEFAULT_STD = 50
+
+class MF:
     def __init__(self,occurrence,  gauche_noyau, droite_noyau, std_gauche, std_droite, username="DEFAULT"):
         self.username = username
         self.gauche_noyau = gauche_noyau
@@ -14,10 +17,10 @@ class IntervalleFlou:
         self.occurrences = occurrence
     
     def draw(self):
-        dessiner_fonction_membre(self)
+        draw_membership_function(self)
     
     def draw_with(self, other):
-        dessiner_deux_fonctions_membre(self.username, other.username, self, other)
+        draw_membership_functions(self.username, other.username, self, other)
     
     def possibilite(self, other):
         return possibilite(self, other)
@@ -48,22 +51,26 @@ class IntervalleFlou:
         """
         Renvoie la soustraction de la mf courante par la mf other
         """
-        if self.occurrences == 0 or other.occurrences == 0:
-            return None
         occurences = self.occurrences + other.occurrences
         gauche_noyau = self.gauche_noyau - other.droite_noyau
         droite_noyau = self.droite_noyau - other.gauche_noyau
         std_gauche = self.std_gauche + other.std_gauche
         std_droite = self.std_droite + other.std_droite
-        return IntervalleFlou(occurences, gauche_noyau, droite_noyau, std_gauche, std_droite, self.username)
+        return MF(occurences, gauche_noyau, droite_noyau, std_gauche, std_droite, self.username)
 
     def __str__(self) -> str:
         return f"username : {self.username}, occurrences : {self.occurrences}, gauche_noyau : {self.gauche_noyau}, droite_noyau : {self.droite_noyau}, std_gauche : {self.std_gauche}, std_droite : {self.std_droite}"
 
 
+def std_raiser(std, occurrences):
+    """
+    Ajuste l'ecart type en fonction du nombre d'occurrences.
+    """
+    if occurrences > OCCURRENCES_THRESHOLD:
+        return std
+    return std+(DEFAULT_STD-occurrences*DEFAULT_STD/OCCURRENCES_THRESHOLD)
 
-
-def trouver_intersections(m1,m2,std1,std2):
+def solve(m1,m2,std1,std2):
     """
     Renvoie les 3 racines d'une fonction quadratique
     paramètres :
@@ -99,22 +106,22 @@ def possibilite(MF1, MF2):
         logger_intersection.info("Intersection entre MF1 droite et MF2 gauche")
         if MF1.std_droite == 0 or MF2.std_gauche == 0:
             return 0
-        intersections = trouver_intersections(MF1.droite_noyau, MF2.gauche_noyau, MF1.std_droite, MF2.std_gauche)
-        intersections = [r for r in intersections if r > MF1.droite_noyau and r < MF2.gauche_noyau]
+        roots = solve(MF1.droite_noyau, MF2.gauche_noyau, MF1.std_droite, MF2.std_gauche)
+        roots = [r for r in roots if r > MF1.droite_noyau and r < MF2.gauche_noyau]
     
     # cas 3 : noyau de MF1 a droite de noyau de MF2
     if MF2.droite_noyau < MF1.gauche_noyau:
         logger_intersection.info("Intersection entre MF1 gauche et MF2 droite")
         if MF1.std_gauche == 0 or MF2.std_droite == 0:
             return 0
-        intersections = trouver_intersections(MF1.gauche_noyau, MF2.droite_noyau, MF1.std_gauche, MF2.std_droite)
-        intersections = [r for r in intersections if r > MF2.droite_noyau and r < MF1.gauche_noyau]
+        roots = solve(MF1.gauche_noyau, MF2.droite_noyau, MF1.std_gauche, MF2.std_droite)
+        roots = [r for r in roots if r > MF2.droite_noyau and r < MF1.gauche_noyau]
     
-    if len(intersections) == 0:
+    if len(roots) == 0:
         raise ValueError("Aucune intersection trouvée, bonne chance pour debugguer ça" + str(MF1) + " et " + str(MF2))
-    return MF1.appartenance_de(intersections[0])
+    return MF1.appartenance_de(roots[0])
 
-def dessiner_fonction_membre(mf):
+def draw_membership_function(mf):
     """
     Trace la gaussienne en fonction de la moyenne et l'ecart type à gauche et à droite
     Notation Left-Right
@@ -122,6 +129,8 @@ def dessiner_fonction_membre(mf):
         mf (MF) : la fonction membre
     Attention : n'affiche pas le plot. il faut suivre la fonction de plt.show()
     """
+    if mf.occurrences == 0:
+        return
 
     m1 = mf.gauche_noyau
     m2 = mf.droite_noyau
@@ -140,7 +149,7 @@ def dessiner_fonction_membre(mf):
 
     plt.plot(x, y)
 
-def dessiner_deux_fonctions_membre(user_name1, user_name2, MF1, MF2):
+def draw_membership_functions(user_name1, user_name2, MF1, MF2):
     """
     Trace 2 mfs sur le même graphique
     paramètres :
@@ -148,13 +157,13 @@ def dessiner_deux_fonctions_membre(user_name1, user_name2, MF1, MF2):
         meanI (float) : la moyenne de l'Ieme user
         stdI (float) : l'ecart type de l'Ieme user
     """
-    dessiner_fonction_membre(MF1)
-    dessiner_fonction_membre(MF2)
+    draw_membership_function(MF1)
+    draw_membership_function(MF2)
     plt.title("MF compared")
     plt.legend([user_name1, user_name2])
     plt.show()
 
-def extract_mf(data: list, prct_in_kernel=POURCENTAGE_DANS_LE_NOYAUX):
+def extract_mf(data: list):
     """
     A partir d'une liste de temps, renvoie le nombre d'occurrences, la moyenne et l'ecart type
     paramètres :
@@ -168,7 +177,7 @@ def extract_mf(data: list, prct_in_kernel=POURCENTAGE_DANS_LE_NOYAUX):
     """
 
     data = np.array(data)
-    data = data[abs(data)<TEMPS_MAXIMAL_AUTORISE] # exclue les données au dessus de la limite
+    data = data[abs(data)<MAX_TIME_ALLOWED] # exclue les données au dessus de la limite
 
     occurrences = len(data)
 
@@ -178,8 +187,8 @@ def extract_mf(data: list, prct_in_kernel=POURCENTAGE_DANS_LE_NOYAUX):
     # calcul du noyau
     # on prend X% de la donnée pour le noyau
 
-    m1 = np.quantile(data, (1 - prct_in_kernel)/2)
-    m2 = np.quantile(data, 1 - (1 - prct_in_kernel)/2)
+    m1 = np.quantile(data, (1 - PERCENT_IN_KERNEL)/2)
+    m2 = np.quantile(data, 1 - (1 - PERCENT_IN_KERNEL)/2)
 
 
     # Calcul des écarts types à gauche puis à droite
@@ -206,9 +215,12 @@ def extract_mf(data: list, prct_in_kernel=POURCENTAGE_DANS_LE_NOYAUX):
 
     # on applique une fonction qui augmente artificiellement la taille
     # du noyau lorsque le nombre de donnée est trop faible
-    if occurrences < NB_OCCURENCE_SUFFISANT:
-        std1 += (STD_PAR_DEFAUT-occurrences*STD_PAR_DEFAUT/NB_OCCURENCE_SUFFISANT)
-        std2 += (STD_PAR_DEFAUT-occurrences*STD_PAR_DEFAUT/NB_OCCURENCE_SUFFISANT)
+    if occurrences < OCCURRENCES_THRESHOLD:
+        std1 += (DEFAULT_STD-occurrences*DEFAULT_STD/OCCURRENCES_THRESHOLD)
+        std2 += (DEFAULT_STD-occurrences*DEFAULT_STD/OCCURRENCES_THRESHOLD) 
 
     retour = [occurrences, m1, m2, std1, std2]
+    # on arrondi tout pour éviter des erreurs étranges (ex avec :
+    # m1 = (11, 30.5, 50.199999928474426, 4.1, 6.83)
+    # m2 = (7, 50.2, 150.0, 18.2, 307)
     return [round(x, 3) for x in retour]
