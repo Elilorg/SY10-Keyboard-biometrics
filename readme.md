@@ -13,9 +13,9 @@ En plus d'installer les packages python contenus dans 'requirements.txt' (avec l
 ## Architecture du projet et execution
 ### Programme principal
 Le site web est basé sur la librairie python 'Flask', et s'execute depuis *main.py* avec la commande :
-'''bash
+```bash
 flask --app main.py run --debug
-'''
+```
 
 ### Logique (floue)
 
