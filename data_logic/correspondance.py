@@ -52,8 +52,7 @@ def evaluate_correspondance(user_name1, user_name2):
             continue
         sim1 = mf1_1.possibilite(mf2_1)
         sim2 = mf1_2.possibilite(mf2_2)
-        #similarites_bigrammes.append(min(sim1, sim2)) # le ET est un min
-        similarites_bigrammes.append(sim1 * sim2) # le ET est un min
+        similarites_bigrammes.append(sim1 * sim2) # le ET est un produit
 
     log_correspondance(user_name1, user_name2, prod([prod(similarites) , prod(similarites_bigrammes)])) # De niveau INFO
     logger_corres.debug(f"          {user_name1} {user_name2} HT : {round(prod(similarites), 2)} Big : {round(prod(similarites_bigrammes), 2)}")
